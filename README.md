@@ -2,6 +2,10 @@
 
 node-xattr is a native module wrapping xattr to read and set extended attributes on files
 
+## Install
+
+npm install xattr
+
 ## Build
 
 node-waf configure && node-waf build && node-waf install
