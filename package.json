@@ -1,0 +1,18 @@
+{
+  	"name": "xattr",
+	"version": "v0.1.0",
+	"description": "Wrapper for getting and setting extended attributes on files."
+    "author": {
+		"name": "Dustin Machi",
+		"email": "dmachi@dojotoolkit.org"
+	},
+	"repository":{
+		"type": "git",
+		"url": "https://github.com/dmachi/node-xattr"
+	},
+	"scripts" : {
+		"preinstall" : "node-waf configure && node-waf build",
+		"preuninstall" : "rm -rf build/*"
+	},
+	"main" : "build/Release/xattr.node"
+}
