@@ -1,6 +1,6 @@
 #node-xattr
 
-node-xattr is a native module wrapping xattr to read and set extended attributes on files
+node-xattr is a native module wrapping xattr to read and set extended attributes on files. 
 
 ## Install
 
@@ -16,11 +16,11 @@ node-waf configure && node-waf build && node-waf install
 
 Get all the extended attributes on a file, returns obj 
  
-  var attrs = xattr.listxattr("/path/to/file");
+  var attrs = xattr.list("/path/to/file");
 
 Set an extended attribute on a file.  Note at thie moment you can only set string values.
   
-  xattr.setxattr("/path/to/file", "someAttribute", "someValue");
+  xattr.set("/path/to/file", "someAttribute", "someValue");
 
 
  
