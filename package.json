@@ -1,6 +1,6 @@
 {
   	"name": "xattr",
-	"version": "v0.1.0",
+	"version": "v0.1.1",
 	"description": "Wrapper for getting and setting extended attributes on files."
     "author": {
 		"name": "Dustin Machi",
