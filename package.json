@@ -1,8 +1,8 @@
 {
   	"name": "xattr",
 	"version": "v0.1.1",
-	"description": "Wrapper for getting and setting extended attributes on files."
-    "author": {
+	"description": "Wrapper for getting and setting extended attributes on files.",
+    	"author": {
 		"name": "Dustin Machi",
 		"email": "dmachi@dojotoolkit.org"
 	},
