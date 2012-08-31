@@ -58,7 +58,11 @@ static Handle<Value> set(const Arguments& args) {
         REQ_ASCII_ARG(2,val);
         valLen = val.length();
 
+#ifdef __APPLE__
+	res = setxattr(*filename, *attribute, *val, valLen,0,0);
+#else
 	res = setxattr(*filename, *attribute, *val, valLen,0);
+#endif
         //printf("Setting file: %s, attribute: %s, value: %s, length: %d\n", *filename, *attribute, *val,val.length());
 
 
@@ -83,14 +87,23 @@ static Handle<Value> list(const Arguments& args) {
 	filename= ObjectToString(s).c_str();
 
 	//get all the extended attributes on filename
-	listLen = listxattr(filename,list,XATTR_SIZE);
 
+#ifdef __APPLE__
+	listLen = listxattr(filename,list,XATTR_SIZE,0);
+#else
+	listLen = listxattr(filename,list,XATTR_SIZE);
+#endif
 	// create obj for return
 	Handle<Object> result = Object::New();
 
 	//for each of the attrs, do getxattr and add them as key/val to the obj
 	for (ns=0; ns<listLen; ns+= strlen(&list[ns])+1){
+
+#ifdef __APPLE__
+		valueLen = getxattr(filename, &list[ns],value, XATTR_SIZE,0,0);
+#else
 		valueLen = getxattr(filename, &list[ns],value, XATTR_SIZE);
+#endif
 		if (valueLen > 0){
 			result->Set(String::New(&list[ns]),String::New(value, valueLen));
 		}

@@ -1,6 +1,6 @@
 {
   	"name": "xattr",
-	"version": "v0.1.1",
+	"version": "v0.9.0",
 	"description": "Wrapper for getting and setting extended attributes on files.",
     	"author": {
 		"name": "Dustin Machi",
@@ -11,7 +11,7 @@
 		"url": "https://github.com/dmachi/node-xattr"
 	},
 	"scripts" : {
-		"preinstall" : "node-waf configure && node-waf build",
+		"preinstall" : "node-gyp configure && node-gyp build",
 		"preuninstall" : "rm -rf build/*"
 	},
 	"main" : "build/Release/xattr.node"
