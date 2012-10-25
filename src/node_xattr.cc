@@ -16,13 +16,14 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
-
+#include "node_xattr.h"
 #include <node.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/xattr.h>
 #include <iostream>
+
 using namespace v8;
 using namespace node;
 using namespace std;
@@ -48,31 +49,88 @@ string ObjectToString(Local<Value> value) {
     return std::string(*ascii_value);
 }
 
-static Handle<Value> set(const Arguments& args) {
+v8::Handle<v8::Value> set(const v8::Arguments &args) {
 	HandleScope scope;
 	ssize_t res;
 	int valLen;
 
-        REQ_ASCII_ARG(0,filename);
-        REQ_ASCII_ARG(1,attribute);
-        REQ_ASCII_ARG(2,val);
+	if (args.Length() < 1) {
+		return ThrowException(String::New("Expected filename as the first argument"));
+	}
+
+	if (args[0]->IsString()) {
+		if (args.Length() < 4) { 
+			if (!args[1]->IsString())
+				return ThrowException(String::New("Expected second argument to be a string (attribute name)"));
+			if (!args[2]->IsString())
+				return ThrowException(String::New("Expected third argument to be a string (attribute value)"));
+			if (!args[3]->IsFunction())
+				return ThrowException(String::New("Expected fourth (last) argument to be a callback function"));
+		}
+	}else {
+		return ThrowException(String::New("Expected string or buffer as first argument"));
+	}
+
+	AsyncBaton *baton = new AsyncBaton;
+	baton->request.data = baton;
+	baton->filename = 0;
+	baton->attribute = 0;
+	baton->val=NULL;
+	baton->error = 0;
+
+	String::Utf8Value filename(args[0]->ToString());
+	baton->filename= strdup(*filename);
+
+	String::Utf8Value attribute(args[1]->ToString());
+	baton->attribute= strdup(*attribute);
+
+	String::Utf8Value value(args[2]->ToString());
+	baton->value= strdup(*value);
+	
+	uv_queue_work(uv_default_loop(), &baton->request, setAttribute, setAfter);
+
+	return Undefined();
+}
+
+void setAttribute(uv_work_t *req) {
+	AsyncBaton *baton = static_cast(AsyncBaton*>(req->data);
+
         valLen = val.length();
 #ifdef __APPLE__
-	res = setxattr(*filename, *attribute, *val, valLen,0,0);
+	res = setxattr(baton->filename, baton->attribute, baton->value, baton->value.length(),0,0);
 #else
-	res = setxattr(*filename, *attribute, *val, valLen,0);
+	res = setxattr(baton->filename, baton->attribute, baton->value, baton->value.length(),0);
 #endif
-        //printf("Setting file: %s, attribute: %s, value: %s, length: %d\n", *filename, *attribute, *val,val.length());
-
+        printf("Setting file: %s, attribute: %s, value: %s, length: %d\n", baton->filename, baton->attribute, baton->value,baton->value.length());
 
 	//Error
 	if (res == -1){
-                return ThrowException(Exception::TypeError(             \
-                        String::Concat(String::New("Error setting extended attribue: "), String::New(strerror(errno)))));
+		baton.error=errno;
 	}
-	
-        return Boolean::New(true);
 }
+
+void setAfter(uv_work_t *req) {
+	AsyncBaton *baton = static_cast(AsyncBaton*>(req->data);
+
+	if (baton->error){
+	        Local<Object> error = Object::New();
+		error->Set(String::New("code"), Integer::New(baton->error));
+		error->Set(String::New("message"), ErrorToString(baton->error));
+		Handle<Value> argv[] = { error, Null() };
+		baton->callback->Call(Context::GetCurrent()->Global(), 2, argv);
+	}else{
+		Handle<Value> argv[] = {};
+		baton->callback->Call(Context::GetCurrent->Global(),0,argv);
+	}
+
+	baton->callack.Dispose()
+	delete baton->filename;
+	delete baton->attribute;
+	delete baton->value;
+	delete baton;
+}
+
+
 
 static Handle<Value> list(const Arguments& args) {
 	HandleScope scope;
