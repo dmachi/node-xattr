@@ -1,6 +1,6 @@
 var xattr = require("../build/Release/xattr.node");
 
-var f = "/mnt/DataCollections/TEST";
+var f = "/tmp/xattr.test"
 
 console.log("Setting extended attributes.");
 xattr.set(f, "user.testprop3", "Lorem Ipsum Dolor Sortis");

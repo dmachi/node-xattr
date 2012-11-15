@@ -1,10 +1,10 @@
 var xattr = require("../build/Release/xattr.node");
 
-var f = "/mnt/DataCollections/Fubar";
+var f = "/tmp/xattr.test"
 
 console.log("Set xattr");
 try {
-	xattr.set(f, "user.testprop3", "Lorem Ipsum Dolor Sortis");
+	xattr.set(f, "system.testprop3", "Lorem Ipsum Dolor Sortis");
 }catch(e){
 	console.log("Caught Error: ", e);
 }

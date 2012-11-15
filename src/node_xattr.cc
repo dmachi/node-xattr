@@ -94,6 +94,10 @@ static Handle<Value> list(const Arguments& args) {
 	// create obj for return
 	Handle<Object> result = Object::New();
 
+	if (listLen<1){
+		return result;
+	}
+
 	//for each of the attrs, do getxattr and add them as key/val to the obj
 	for (ns=0; ns<listLen; ns+= strlen(&list[ns])+1){
 #ifdef __APPLE__
@@ -101,9 +105,9 @@ static Handle<Value> list(const Arguments& args) {
 #else
 		  valueLen = getxattr(filename, &list[ns],value, XATTR_SIZE);
 #endif
-		if (valueLen > 0){
+		//if (valueLen > 0){
 			result->Set(String::New(&list[ns]),String::New(value, valueLen));
-		}
+		//}
 	} 
 	return result;
 }
