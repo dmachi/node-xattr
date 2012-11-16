@@ -4,6 +4,8 @@ var utils = require("./utils");
 var startingRuns=false;
 var errorCount=0;
 var successCount=0;
+var delayBeforeCheck=1000;
+
 function runTest(runs){
 	if (!startingRuns){
 		startingRuns=runs;
@@ -38,21 +40,34 @@ function runTest(runs){
 		}
 
 
-		var data = xattr.list(filename);
+		function check() {
+			var data = xattr.list(filename);
 
-		for (var i = 0; i<4; i++){
-			if (data["user.p"+i] != vals["v" + i]){
-				errorCount++;
-				console.error("Mismatch: ",data["user.p"+i],vals["v" +i], "on run ", runs);
-				console.error("Value length: ", vals["v"+i].length);
-			}else{
-				successCount++;
-			}	
+			for (var i = 0; i<4; i++){
+				if (data["user.p"+i] != vals["v" + i]){
+					errorCount++;
+					console.error("Mismatch: ",data["user.p"+i],vals["v" +i], "on run ", runs);
+					console.error("Value length: ", vals["v"+i].length);
+				}else{
+					successCount++;
+				}	
+			}
 		}
 
-		utils.removeFile(filename);
-//		console.log("******** END " + (startingRuns - runs) + "**********");
-		runTest(runs-1);
+		if (!delayBeforeCheck){
+			check();
+			utils.removeFile(filename);
+	//		console.log("******** END " + (startingRuns - runs) + "**********");
+			runTest(runs-1);
+		}else{
+			setTimeout(function(){
+	
+				check();
+				utils.removeFile(filename);
+		//		console.log("******** END " + (startingRuns - runs) + "**********");
+				runTest(runs-1);
+			}, delayBeforeCheck);	
+		}
 	});
 }
 
