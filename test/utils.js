@@ -6,7 +6,7 @@ var filename = "/var/glusterfs/cid_share/cid_share_0/andrewTest/xattr.test";
 //var filename = "/opt/solr_index/perfTest/xattr.test";
 //var filename = "/var/glusterfs/galaxy/galaxy_0/testDir/xattr.test";
 //var filename = "/var/glusterfs/polyomic/polyomic_0/testDir/xattr.test";
-//var filename = "/storage/testDir/xattr.test";
+var filename = "/storage/testDir/xattr.test";
 
 exports.createFile=function(index, cb){
 	if (index){
