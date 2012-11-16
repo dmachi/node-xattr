@@ -1,14 +1,47 @@
 var xattr = require("../build/Release/xattr.node");
+var utils = require("./utils");
 
-var f = "/tmp/xattr.test"
+var startingRuns=false;
+function runTest(runs){
+	if (!startingRuns){
+		startingRuns=runs;
+	}
+	if (runs<0){ console.log("complete"); return; }
 
-console.log("Setting extended attributes.");
-xattr.set(f, "user.testprop3", "Lorem Ipsum Dolor Sortis");
-xattr.set(f, "user.testpropb", "Diff Value");
-xattr.set(f, "user.testpropa", "ValueForA");
-console.log("Done.");
+	utils.createFile(runs, function(filename){
+		console.log("***** RUN " + (startingRuns-runs) + "*********"); 
+		console.log("\tSetting extended attributes on file: ", filename);
+		var vals = {
+			v0: utils.generateString(),
+			v1: utils.generateString(),
+			v2: utils.generateString(),
+			v3: utils.generateString()
+		}
+		try {
+			xattr.set(filename, "user.p0", vals.v0);
+			xattr.set(filename, "user.p1", vals.v1 );
+			xattr.set(filename, "user.p2", vals.v2); 
+			xattr.set(filename, "user.p3", vals.v3);
+		}catch(err){
+			console.log("\tError: ", err);
+			//console.log("\tVals: ", vals);
+			return;	
+		}
 
-console.log("Attributes ", f, ":");
-console.log(xattr.list(f));
 
+		var data = xattr.list(filename);
+
+		for (var i = 0; i<4; i++){
+			if (data["user.p"+i] != vals["v" + i]){
+				console.log("Mismatch: ",data["user.p"+i],vals["v" +i]);
+			}
+		}
+
+//		utils.removeFile(filename);
+		console.log("******** END " + (startingRuns - runs) + "**********");
+		runTest(runs-1);
+	});
+}
+
+runTest(100);
 
