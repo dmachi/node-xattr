@@ -14,7 +14,7 @@ Get all the extended attributes on a file, returns obj
  
   var attrs = xattr.glist("/path/to/file");
 
-Get just the extended attribute names on a file, returns obj 
+Get just the extended attribute names on a file, returns array obj 
  
   var attrs = xattr.list("/path/to/file");
 
