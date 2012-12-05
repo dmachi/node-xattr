@@ -1,5 +1,5 @@
-var xattr = require("../build/Release/xattr.node");
-var utils = require("./utils");
+var xattr = require("/home/grant/.nvm/v0.8.14/lib/node_modules/xattr/build/Release/xattr.node");
+var utils = require("/home/grant/projects/node-xattr/node-xattr/test/utils.js");
 
 var startingRuns=false;
 var errorCount=0;
@@ -41,7 +41,7 @@ function runTest(runs){
 
 
 		function check() {
-			var data = xattr.list(filename);
+			var data = xattr.glist(filename);
 
 			for (var i = 0; i<4; i++){
 				if (data["user.p"+i] != vals["v" + i]){
