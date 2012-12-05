@@ -41,7 +41,7 @@ function runTest(runs){
 
 
 		function check() {
-			var data = xattr.list(filename);
+			var data = xattr.glist(filename);
 
 			for (var i = 0; i<4; i++){
 				if (data["user.p"+i] != vals["v" + i]){
