@@ -1,5 +1,5 @@
-var xattr = require("/home/grant/.nvm/v0.8.14/lib/node_modules/xattr/build/Release/xattr.node");
-var utils = require("/home/grant/projects/node-xattr/node-xattr/test/utils.js");
+var xattr = require("../build/Release/xattr.node");
+var utils = require("./utils");
 
 var startingRuns=false;
 var errorCount=0;
