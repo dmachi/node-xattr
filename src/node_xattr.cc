@@ -74,7 +74,7 @@ static Handle<Value> set(const Arguments& args) {
         return Boolean::New(true);
 }
 
-static Handle<Value> GetList(const Arguments& args) {
+static Handle<Value> glist(const Arguments& args) {
 	HandleScope scope;
 	char list[XATTR_SIZE],value[XATTR_SIZE];
 	const char *filename;
@@ -138,7 +138,7 @@ static Handle<Value> get(const Arguments& args) {
 	return result;
 }
 
-static Handle<Value> SimpleList(const Arguments& args) {
+static Handle<Value> list(const Arguments& args) {
 	HandleScope scope;
 	char list[XATTR_SIZE];
 	const char *filename;
@@ -196,8 +196,8 @@ extern "C" {
 
 	void init (Handle<Object> target)
 	{
-		NODE_SET_METHOD(target, "list",  SimpleList);
-		NODE_SET_METHOD(target, "glist", GetList);
+		NODE_SET_METHOD(target, "list",  list);
+		NODE_SET_METHOD(target, "glist", glist);
 		NODE_SET_METHOD(target, "set", set);
 		NODE_SET_METHOD(target, "get", get);
 		NODE_SET_METHOD(target, "remove", remove);
