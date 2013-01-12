@@ -40,8 +40,8 @@ using namespace std;
         return ThrowException(Exception::TypeError(             \
                 String::New("Argument must be a string")));     \
     String::AsciiValue VAR(args[I]);
-
-
+//toggle strict compatibility with c api
+bool compat = false;
 
 string ObjectToString(Local<Value> value) {
     String::AsciiValue ascii_value(value);
@@ -138,7 +138,7 @@ static Handle<Value> get(const Arguments& args) {
 	return result;
 }
 
-static Handle<Value> list(const Arguments& args) {
+static Handle<Value> clist(const Arguments& args) {
 	HandleScope scope;
 	char list[XATTR_SIZE];
 	const char *filename;
@@ -190,17 +190,33 @@ static Handle<Value> remove(const Arguments& args) {
         return Boolean::New(true);
 }
 
+static Handle<Value> list(const Arguments& args){
+if(compat)
+	return(clist(args));
+else
+	return(glist(args));
+}
 
+
+
+static Handle<Value> ccompat(const Arguments& args){
+ HandleScope scope;
+ if(args[0]->IsBoolean())
+	 compat = args[0]->ToBoolean()->Value();
+ return(Boolean::New(compat));
+}
 
 extern "C" {
 
 	void init (Handle<Object> target)
 	{
 		NODE_SET_METHOD(target, "list",  list);
+		NODE_SET_METHOD(target, "clist", clist);
 		NODE_SET_METHOD(target, "glist", glist);
 		NODE_SET_METHOD(target, "set", set);
 		NODE_SET_METHOD(target, "get", get);
 		NODE_SET_METHOD(target, "remove", remove);
+		NODE_SET_METHOD(target, "ccompat", ccompat);
 	}
 
 	NODE_MODULE(xattr, init);
