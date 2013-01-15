@@ -1,7 +1,7 @@
 var 	fs = require("fs")
 
 //var filename = "/gluster_mounts/polyomic/testdir/xattr.test";
-var filename = "/tmp/xattr.test";
+var filename = "/var/glusterfs/cid_share/cid_share_0/andrewTest/xattr.test";
 //var filename = "/var/glusterfs/cid_share/cid_share_0/testdir/xattr.test";
 //var filename = "/opt/solr_index/perfTest/xattr.test";
 //var filename = "/var/glusterfs/galaxy/galaxy_0/testDir/xattr.test";
@@ -10,7 +10,7 @@ var filename = "/tmp/xattr.test";
 exports.createFile=function(index, cb){
 	if (index){
 		var f = filename + "." + index;
-		fs.writeFile(f, "testFile Data: " + exports.generateString(500000), function(){
+		fs.writeFile(f, "testFile Data: " + exports.generateString(1000000), function(){
 			cb(f);
 		});
 	}
@@ -22,7 +22,7 @@ exports.removeFile=function(f){
 
 exports.generateString=function(size){
 	var chars = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-	var string_length = Math.floor(Math.random() * (size || 1000));
+	var string_length = Math.floor(Math.random() * (size || 3000));
 	var randomstring = '';
 	var charCount = 0;
 	var numCount = 0;
