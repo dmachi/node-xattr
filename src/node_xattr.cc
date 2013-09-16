@@ -133,7 +133,11 @@ static Handle<Value> get(const Arguments& args) {
 #else
 		  valueLen = getxattr(filename, attribute,value, XATTR_SIZE);
 #endif
+		  if(valueLen == -1) {
+			result->Set(String::New(attribute),Null());
+		  } else {
 			result->Set(String::New(attribute),String::New(value,valueLen));
+		  }
 
 	return result;
 }
