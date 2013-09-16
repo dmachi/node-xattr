@@ -21,7 +21,13 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef __FreeBSD__
+#include <sys/types.h>
+#include <sys/extattr.h>
+#define XATTR_SIZE 10000 /* stolen from Linux ... probably NOT a great value to use */
+#else
 #include <sys/xattr.h>
+#endif
 #include <iostream>
 using namespace v8;
 using namespace node;
@@ -59,6 +65,8 @@ static Handle<Value> set(const Arguments& args) {
         valLen = val.length();
 #ifdef __APPLE__
 	res = setxattr(*filename, *attribute, *val, valLen,0,0);
+#elif __FreeBSD__
+	res = extattr_set_file(*filename, EXTATTR_NAMESPACE_USER, *attribute, *val, valLen);
 #else
 	res = setxattr(*filename, *attribute, *val, valLen,0);
 #endif
@@ -88,6 +96,8 @@ static Handle<Value> glist(const Arguments& args) {
 	//get all the extended attributes on filename
 #ifdef __APPLE__
 	listLen = listxattr(filename,list,XATTR_SIZE,0);
+#elif __FreeBSD__
+	listLen = extattr_list_file(filename, EXTATTR_NAMESPACE_USER, list, XATTR_SIZE);
 #else
 	listLen = listxattr(filename,list,XATTR_SIZE);
 #endif
@@ -95,6 +105,20 @@ static Handle<Value> glist(const Arguments& args) {
 	Handle<Object> result = Object::New();
 
 	//for each of the attrs, do getxattr and add them as key/val to the obj
+#ifdef __FreeBSD__
+        /* FreeBSD sends us a flat list of Pascal-encoded strings; convert to null-terminated
+           for use with extattr_get_file */
+	for (ns=0; ns<listLen; ns+= (uint8_t)(list[ns])+1){
+		  char attrname[NAME_MAX];
+		  uint8_t len = list[ns];
+		  memset(&attrname, 0, NAME_MAX);
+		  memcpy(&attrname, &list[ns]+1, len);
+		  valueLen = extattr_get_file(filename, EXTATTR_NAMESPACE_USER, attrname, value, XATTR_SIZE);
+		  if (valueLen > 0){
+			  result->Set(String::New(attrname),String::New(value, valueLen));
+		  }
+
+#else
 	for (ns=0; ns<listLen; ns+= strlen(&list[ns])+1){
 #ifdef __APPLE__
 		  valueLen = getxattr(filename, &list[ns],value, XATTR_SIZE, 0, 0);
@@ -104,6 +128,8 @@ static Handle<Value> glist(const Arguments& args) {
 		if (valueLen > 0){
 			result->Set(String::New(&list[ns]),String::New(value, valueLen));
 		}
+
+#endif /* FreeBSD */
 	} 
 	return result;
 }
@@ -130,10 +156,16 @@ static Handle<Value> get(const Arguments& args) {
 	//for each of the attrs, do getxattr and add them as key/val to the obj
 #ifdef __APPLE__
 		  valueLen = getxattr(filename, attribute,value, XATTR_SIZE, 0, 0);
+#elif __FreeBSD__
+		  valueLen = extattr_get_file(filename, EXTATTR_NAMESPACE_USER, attribute, value, XATTR_SIZE);
 #else
 		  valueLen = getxattr(filename, attribute,value, XATTR_SIZE);
 #endif
+		  if(valueLen == -1) {
+			result->Set(String::New(attribute),Null());
+		  } else {
 			result->Set(String::New(attribute),String::New(value,valueLen));
+		  }
 
 	return result;
 }
@@ -152,6 +184,8 @@ static Handle<Value> clist(const Arguments& args) {
 	//get all the extended attributes on filename
 #ifdef __APPLE__
 	listLen = listxattr(filename,list,XATTR_SIZE,0);
+#elif __FreeBSD__
+	listLen = extattr_list_file(filename, EXTATTR_NAMESPACE_USER, list, XATTR_SIZE);
 #else
 	listLen = listxattr(filename,list,XATTR_SIZE);
 #endif
@@ -160,10 +194,23 @@ static Handle<Value> clist(const Arguments& args) {
 
 	//for each of the attrs, do getxattr and add them as key/val to the obj
 	int nc=0;
+#ifdef __FreeBSD__
+	for (ns=0; ns<listLen; ns+= (uint8_t)(list[ns])+1){
+		char attrname[NAME_MAX];
+		int8_t len = list[ns];
+		memset(&attrname, 0, NAME_MAX);
+		memcpy(&attrname, &list[ns]+1, len);
+		
+		nc++;
+		result->Set(nc,String::New(attrname));
+	}
+
+#else
 	for (ns=0; ns<listLen; ns+= strlen(&list[ns])+1){
 			nc++;
 			result->Set(nc,String::New(&list[ns]));
 	} 
+#endif
 	return result;
 }
 static Handle<Value> remove(const Arguments& args) {
@@ -175,6 +222,8 @@ static Handle<Value> remove(const Arguments& args) {
         REQ_ASCII_ARG(1,attribute);
 #ifdef __APPLE__
 	res = removexattr(*filename, *attribute,0);
+#elif __FreeBSD__
+	res = extattr_delete_file(*filename, EXTATTR_NAMESPACE_USER, *attribute);
 #else
 	res = removexattr(*filename, *attribute);
 #endif
